@@ -1,4 +1,5 @@
 import { writeFile } from "fs/promises";
+import { PARSE_GROUP_IDS } from "./env.js";
 import { getDialogs, getMessages } from "./messages.js";
 
 function safeStringify(obj) {
@@ -34,29 +35,38 @@ function safeStringify(obj) {
 async function main() {
   try {
     const dialogs = await getDialogs(1);
-    console.log("Dialog structure:", Object.keys(dialogs[0]));
-    console.log(
-      "Dialog internal objects:",
-      Object.entries(dialogs[0]).map(
-        ([key, value]) => `${key}: ${value?.constructor?.name || typeof value}`
-      )
-    );
+    // console.log( "All dialog IDs:", dialogs.map((d) => Number(d.id.value)));
 
-    await writeFile("del.json", safeStringify(dialogs[0]));
-    console.log("Dialog saved to del.json");
-
-    console.log("\nYour recent chats:");
-    dialogs.forEach((d) =>
-      console.log(`${d.name} (${d.id}): ${d.unreadCount} unread`)
+    const targetDialogs = dialogs.filter((d) =>
+      PARSE_GROUP_IDS.includes(Number(d.id.value))
     );
+    // console.log( "Target dialog IDs:", targetDialogs.map((d) => Number(d.id.value)));
+
+    if (targetDialogs.length === 0) {
+      targetDialogs.push(dialogs[0]);
+    }
+
+    await writeFile("tmp/dialogs.json", safeStringify(targetDialogs));
+    console.log("Dialogs saved to temp/dialogs.json");
 
     if (dialogs.length > 0) {
-      const messages = await getMessages(dialogs[0].id, 5);
-      console.log(`\nLast 5 messages from ${dialogs[0].name}:`);
-      messages.forEach((msg) => {
-        const date = new Date(msg.date * 1000).toLocaleString();
-        console.log(`[${date}] ${msg.text}`);
-      });
+      const lastMessages = [];
+
+      for (const dialog of targetDialogs) {
+        const messages = await getMessages(dialog.id.value, 1);
+        // console.log(`\nLast message from dialog ${dialog.id.value}:`, messages);
+
+        if (messages && messages.length > 0) {
+          lastMessages.push({
+            chatId: Number(dialog.id.value),
+            chatTitle: dialog.title,
+            message: messages[0],
+          });
+        }
+      }
+
+      await writeFile("tmp/messages.json", safeStringify(lastMessages));
+      console.log("Last messages saved to temp/messages.json");
     }
   } catch (error) {
     console.error("Error:", error.message);

@@ -5,4 +5,4 @@ creds.txt
 session.json
 chats.json
 cryptoapp.db
-del.json
+tmp/

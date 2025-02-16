@@ -29,30 +29,32 @@ export async function getMessages(chatId, limit = 100) {
     limit: limit,
   });
 
-  return messages.map((msg) => ({
-    id: msg.id,
-    date: msg.date,
-    text: msg.text,
-    fromId: msg.fromId?.toString(),
-    replyTo: msg.replyTo?.replyToMsgId,
-  }));
+  return messages;
+  // return messages.map((msg) => ({
+  //   id: msg.id,
+  //   date: msg.date,
+  //   text: msg.text,
+  //   fromId: msg.fromId?.toString(),
+  //   replyTo: msg.replyTo?.replyToMsgId,
+  // }));
 }
 
 export async function getDialogs(limit = 50) {
   const client = await getClient();
+  let allDialogs = [];
 
-  const dialogs = await client.getDialogs({
-    limit: limit,
-  });
+  console.log("Starting getDialogs...");
 
-  return dialogs.map((dialog) => {
-    // const dialogInfo = {
-    //   id: dialog.id,
-    //   name: dialog.title,
-    //   unreadCount: dialog.unreadCount,
-    // };
-    // console.log("dialog:", dialog);
-    // return dialogInfo;
-    return dialog;
-  });
+  const result = await client.getDialogs();
+  // console.log("Got result:", result);
+
+  for (let i = 0; i < result.total; i++) {
+    if (result[i]) {
+      // console.log("Dialog", i, ":", result[i]);
+      allDialogs.push(result[i]);
+    }
+  }
+
+  console.log("Returning total dialogs:", allDialogs.length);
+  return allDialogs;
 }
