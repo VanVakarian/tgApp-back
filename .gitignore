@@ -3,3 +3,6 @@ node_modules
 env.js
 creds.txt
 session.json
+chats.json
+cryptoapp.db
+tmp/
