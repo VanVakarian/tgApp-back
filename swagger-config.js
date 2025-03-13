@@ -1,25 +1,25 @@
-import { APP_IP, APP_PORT } from "./env.js";
+import { APP_IP, APP_PORT } from './env.js';
 
 export const swaggerConfig = {
-  routePrefix: "/docs",
+  routePrefix: '/docs',
   openapi: {
-    openapi: "3.0.3",
+    openapi: '3.0.3',
     info: {
-      title: "API Docs",
-      description: "API documentation for the CryptoApp",
-      version: "1.0.0",
+      title: 'API Docs',
+      description: 'API documentation for the CryptoApp',
+      version: '1.0.0',
     },
     servers: [
       {
         url: `http://${APP_IP}:${APP_PORT}`,
-        description: "Development server",
+        description: 'Development server',
       },
     ],
     components: {
       securitySchemes: {
         bearerAuth: {
-          type: "http",
-          scheme: "bearer",
+          type: 'http',
+          scheme: 'bearer',
         },
       },
     },
@@ -33,7 +33,7 @@ export const swaggerConfig = {
 };
 
 export const swaggerUiConfig = {
-  routePrefix: "/docs",
+  routePrefix: '/docs',
   uiConfig: {
     deepLinking: true,
   },

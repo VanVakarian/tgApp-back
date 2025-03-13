@@ -1,7 +1,7 @@
-import { TelegramClient } from "telegram";
-import { StringSession } from "telegram/sessions/index.js";
-import { API_HASH, API_ID } from "./env.js";
-import { loadSession } from "./session.js";
+import { TelegramClient } from 'telegram';
+import { StringSession } from 'telegram/sessions/index.js';
+import { API_HASH, API_ID } from './env.js';
+import { loadSession } from './session.js';
 
 let client = null;
 
@@ -9,7 +9,7 @@ export async function getClient() {
   if (!client) {
     const savedSession = loadSession();
     if (!savedSession) {
-      throw new Error("No saved session found. Please run login.js first");
+      throw new Error('No saved session found. Please run login.js first');
     }
 
     const stringSession = new StringSession(savedSession);
@@ -43,7 +43,7 @@ export async function getDialogs(limit = 50) {
   const client = await getClient();
   let allDialogs = [];
 
-  console.log("Starting getDialogs...");
+  console.log('Starting getDialogs...');
 
   const result = await client.getDialogs();
   // console.log("Got result:", result);
@@ -55,6 +55,6 @@ export async function getDialogs(limit = 50) {
     }
   }
 
-  console.log("Returning total dialogs:", allDialogs.length);
+  console.log('Returning total dialogs:', allDialogs.length);
   return allDialogs;
 }
