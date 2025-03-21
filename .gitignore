@@ -4,5 +4,5 @@ env.js
 tg-app-creds.txt
 session.json
 chats.json
-cryptoapp.db
+tg-app.db
 tmp/

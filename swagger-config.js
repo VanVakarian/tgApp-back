@@ -6,7 +6,7 @@ export const swaggerConfig = {
     openapi: '3.0.3',
     info: {
       title: 'API Docs',
-      description: 'API documentation for the CryptoApp',
+      description: 'API documentation for the TgApp',
       version: '1.0.0',
     },
     servers: [
