@@ -20,13 +20,31 @@ export async function refresh(request, reply) {
   }
 }
 
-export async function authMiddleware(request, reply) {
+export async function authHeaderMiddleware(request, reply) {
   try {
+    if (!request.headers.authorization) {
+      return reply.code(401).send({ detail: 'Отсутствует заголовок авторизации' });
+    }
+
     const token = request.headers.authorization.split(' ')[1];
     const decoded = await authService.verifyToken(token);
     request.user = decoded;
   } catch (error) {
-    // console.log('error', error);
+    console.log('error', error);
+    return reply.code(401).send({ detail: 'Invalid token' });
+  }
+}
+
+export async function authQueryMiddleware(request, reply) {
+  try {
+    const token = request.query.token;
+    if (!token) {
+      return reply.code(401).send({ detail: 'Отсутствует токен авторизации' });
+    }
+    const decoded = await authService.verifyToken(token);
+    request.user = decoded;
+  } catch (error) {
+    console.log('error', error);
     return reply.code(401).send({ detail: 'Invalid token' });
   }
 }

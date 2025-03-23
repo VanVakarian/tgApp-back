@@ -10,18 +10,20 @@ import { initDatabase } from './db/init.js';
 import { APP_IP, APP_PORT } from './env.js';
 import { swaggerConfig, swaggerUiConfig } from './swagger-config.js';
 
+export const tgAuthSessions = new Map();
+
+export const sseClients = new Map();
+
 initDatabase();
 
 const server = Fastify({ logger: true });
 
-// Register plugins
 server.register(fastifyCompress);
 server.register(fastifySwagger, swaggerConfig);
 server.register(fastifySwaggerUi, swaggerUiConfig);
 server.register(cors, { origin: '*' });
 server.register(fastifySSEPlugin);
 
-// Register route groups
 server.register(authRoutes, { prefix: '/api/auth' });
 server.register(tgAuthRoutes, { prefix: '/api/auth-tg' });
 

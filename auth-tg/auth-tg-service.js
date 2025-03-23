@@ -11,57 +11,92 @@ export async function initTelegramClient(session = '') {
   return client;
 }
 
-export async function startAuth() {
+export async function createAuthSession(phone, password) {
   return {
-    event: 'request_credentials',
-    data: 'Enter phone and password',
+    phone,
+    password,
+    client: null,
+    status: 'INIT',
+    created: Date.now(),
+    resolveCode: null,
+    codePromise: null,
   };
 }
 
-export async function submitCredentials(phone, password, userId) {
+export async function initiateAuth(phone, password, authSession) {
   try {
     const client = await initTelegramClient();
+    authSession.client = client;
+    authSession.status = 'CONNECTING';
 
+    // Создаем Promise для кода верификации
+    authSession.codePromise = new Promise((resolve) => {
+      authSession.resolveCode = resolve;
+    });
+
+    // Используем client.start() с промисами для всех колбэков
+    await client.connect();
     await client.start({
       phoneNumber: async () => phone,
       password: async () => password,
       phoneCode: async () => {
-        client.needCode = true;
-        throw new Error('CODE_REQUIRED');
+        authSession.status = 'CODE_REQUIRED';
+        console.log('Waiting for code...');
+        return authSession.codePromise;
       },
       onError: (err) => {
         throw err;
       },
     });
 
-    const session = client.session.save();
-    await db.saveTelegramSession(userId, session);
-    await client.disconnect();
-
-    return { event: 'auth_status', data: 'success' };
+    // Если дошли до этой точки без ошибок, значит требуется код
+    console.log('initiateAuth: Code required');
+    return { event: 'request_code', data: 'Enter code', requiresCode: true };
   } catch (error) {
-    if (error.message === 'CODE_REQUIRED') {
-      return { event: 'request_code', data: 'Enter code' };
+    authSession.status = 'ERROR';
+    authSession.error = error.message;
+    if (authSession.client) {
+      await authSession.client.disconnect();
     }
     throw error;
   }
 }
 
-export async function submitCode(code, userId) {
+export async function completeAuthWithCode(code, authSession, userId) {
   try {
-    const session = await db.getTelegramSession(userId);
-    const client = await initTelegramClient(session);
+    if (!authSession || authSession.status !== 'CODE_REQUIRED') {
+      throw new Error('Invalid auth session state');
+    }
 
-    await client.start({
-      phoneCode: async () => code,
-    });
+    // Передаем код в ожидающий промис
+    console.log('Received code:', code);
+    authSession.resolveCode(code);
 
-    const newSession = client.session.save();
-    await db.saveTelegramSession(userId, newSession);
-    await client.disconnect();
+    // Ждем завершения процесса авторизации
+    try {
+      // Сохраняем строку сессии после успешной авторизации
+      const session = authSession.client.session.save();
+      authSession.status = 'COMPLETED';
+      authSession.session = session;
 
-    return { event: 'auth_status', data: 'success' };
+      // Сохраняем сессию в базе данных
+      await db.saveTelegramSession(userId, session);
+
+      // Отключаем клиент
+      await authSession.client.disconnect();
+
+      return { event: 'auth_status', data: 'success' };
+    } catch (error) {
+      authSession.status = 'ERROR';
+      authSession.error = error.message;
+      if (authSession.client) {
+        await authSession.client.disconnect();
+      }
+      throw error;
+    }
   } catch (error) {
+    authSession.status = 'ERROR';
+    authSession.error = error.message;
     throw error;
   }
 }
