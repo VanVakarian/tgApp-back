@@ -2,14 +2,14 @@ import { parentPort } from 'worker_threads';
 import { clearAuthSession, completeAuthWithCode, startAuthProcess } from './tg-auth.js';
 
 parentPort.on('message', async (message) => {
-  console.log('Воркер получил сообщение:', message.type, 'с данными:', JSON.stringify(message));
+  console.log('Worker received message:', message.type, 'with data:', JSON.stringify(message));
 
   try {
     let response;
 
     switch (message.type) {
       case 'AUTH_INIT':
-        console.log('Воркер начинает авторизацию для телефона:', message.phone);
+        console.log('Worker starting authorization for phone:', message.phone);
         response = await startAuthProcess(message.phone, message.password);
 
         parentPort.postMessage({
@@ -20,7 +20,7 @@ parentPort.on('message', async (message) => {
         break;
 
       case 'AUTH_SUBMIT_CODE':
-        console.log('Воркер получил код для телефона:', message.phone);
+        console.log('Worker received code for phone:', message.phone);
         response = await completeAuthWithCode(message.code, message.userId);
 
         parentPort.postMessage({
@@ -40,15 +40,15 @@ parentPort.on('message', async (message) => {
         break;
 
       default:
-        console.log('Неизвестный тип сообщения:', message.type);
+        console.log('Unknown message type:', message.type);
         parentPort.postMessage({
           type: 'UNKNOWN_MESSAGE',
           success: false,
-          error: 'Неизвестный тип сообщения',
+          error: 'Unknown message type',
         });
     }
   } catch (error) {
-    console.error('Ошибка в воркере:', error);
+    console.error('Error in worker:', error);
     parentPort.postMessage({
       type: 'WORKER_ERROR',
       success: false,

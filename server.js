@@ -7,7 +7,7 @@ import fastifySSEPlugin from 'fastify-sse';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { Worker } from 'worker_threads';
-import { initWorkerMessageHandler } from './auth-tg/auth-tg-controller.js';
+import { initTgWorkerMessageHandler } from './auth-tg/auth-tg-controller.js';
 import { tgAuthRoutes } from './auth-tg/auth-tg-routes.js';
 import { authRoutes } from './auth/auth-routes.js';
 import { initDatabase } from './db/init.js';
@@ -27,7 +27,7 @@ const __dirname = path.dirname(__filename);
 const workerPath = path.resolve(__dirname, 'tg/tg-worker.js');
 export const worker = new Worker(workerPath);
 
-initWorkerMessageHandler(worker);
+initTgWorkerMessageHandler(worker);
 
 server.decorate('worker', worker);
 

@@ -45,17 +45,17 @@ export async function startAuthProcess(phone, password) {
           phoneNumber: async () => phone,
           password: async () => password,
           phoneCode: async () => {
-            console.log('Telegram запросил код подтверждения');
+            console.log('Telegram requested confirmation code');
             activeSession.status = 'CODE_REQUESTED';
             return phoneCodePromise;
           },
           onError: (err) => {
-            console.error('Ошибка авторизации в Telegram:', err);
+            console.error('Telegram authentication error:', err);
             throw err;
           },
         })
         .catch((err) => {
-          console.error('Ошибка при старте авторизации:', err);
+          console.error('Error during authentication start:', err);
         });
 
       return {
@@ -63,11 +63,11 @@ export async function startAuthProcess(phone, password) {
         requiresCode: true,
       };
     } catch (error) {
-      console.error('Ошибка при авторизации в Telegram:', error);
+      console.error('Error during Telegram authentication:', error);
       throw error;
     }
   } catch (error) {
-    console.error('Ошибка при запуске авторизации:', error);
+    console.error('Error starting authentication:', error);
 
     if (activeSession && activeSession.client) {
       await activeSession.client.disconnect();
@@ -85,7 +85,7 @@ export async function completeAuthWithCode(code, userId) {
   if (!activeSession) {
     return {
       success: false,
-      error: 'Нет активной сессии авторизации',
+      error: 'No active authentication session',
     };
   }
 
@@ -112,11 +112,11 @@ export async function completeAuthWithCode(code, userId) {
 
       return result;
     } catch (error) {
-      console.error('Ошибка при сохранении сессии:', error);
+      console.error('Error saving session:', error);
       throw error;
     }
   } catch (error) {
-    console.error('Ошибка при завершении авторизации:', error);
+    console.error('Error completing authentication:', error);
 
     if (activeSession && activeSession.client) {
       await activeSession.client.disconnect();
