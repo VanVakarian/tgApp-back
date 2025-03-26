@@ -101,8 +101,6 @@ export async function completeAuthWithCode(code, userId) {
         await saveTelegramSession(userId, session);
       }
 
-      await activeSession.client.disconnect();
-
       const result = {
         success: true,
         session,
@@ -117,10 +115,6 @@ export async function completeAuthWithCode(code, userId) {
     }
   } catch (error) {
     console.error('Error completing authentication:', error);
-
-    if (activeSession && activeSession.client) {
-      await activeSession.client.disconnect();
-    }
     activeSession = null;
 
     return {
@@ -131,9 +125,6 @@ export async function completeAuthWithCode(code, userId) {
 }
 
 export function clearAuthSession() {
-  if (activeSession && activeSession.client) {
-    activeSession.client.disconnect();
-  }
   activeSession = null;
 
   return {
