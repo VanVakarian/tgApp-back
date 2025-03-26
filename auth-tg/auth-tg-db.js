@@ -31,3 +31,19 @@ export async function getTelegramSession(userId) {
     return null;
   }
 }
+
+export async function clearTelegramSession(userId) {
+  const connection = await getConnection();
+  try {
+    const query = `
+      UPDATE users
+      SET tgSession = NULL
+      WHERE id = ?
+    `;
+    await connection.run(query, [userId]);
+    return true;
+  } catch (error) {
+    console.error('Error clearing telegram session:', error);
+    return false;
+  }
+}

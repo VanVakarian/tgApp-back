@@ -55,8 +55,22 @@ const sseSchema = {
   },
 };
 
+const clearSchema = {
+  tags: ['auth-tg'],
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean' },
+        message: { type: 'string' },
+      },
+    },
+  },
+};
+
 export async function tgAuthRoutes(fastify) {
   fastify.post('/creds', { schema: credsSchema, preHandler: authHeaderMiddleware }, tgAuthController.initTgAuth);
   fastify.post('/code', { schema: codeSchema, preHandler: authHeaderMiddleware }, tgAuthController.submitTgCode);
+  fastify.post('/clear', { schema: clearSchema, preHandler: authHeaderMiddleware }, tgAuthController.clearTgAuth);
   fastify.get('/sse', { schema: sseSchema, preHandler: authQueryMiddleware }, tgAuthController.getTgAuthEvents);
 }

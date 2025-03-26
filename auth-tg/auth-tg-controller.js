@@ -1,5 +1,5 @@
 import { sseClients, tgAuthSessions } from '../server.js';
-import { getTelegramSession } from './auth-tg-db.js';
+import { clearTelegramSession, getTelegramSession } from './auth-tg-db.js';
 
 function createResponsePromise(worker, expectedTypes) {
   return new Promise((resolve, reject) => {
@@ -127,6 +127,36 @@ export async function submitTgCode(req, reply) {
     return reply.code(500).send({
       success: false,
       error: error.message || 'Failed to complete authentication',
+    });
+  }
+}
+
+export async function clearTgAuth(req, reply) {
+  const userId = req.user.id;
+  const worker = req.server.worker;
+
+  try {
+    const result = await clearTelegramSession(userId);
+
+    worker.postMessage({
+      type: 'AUTH_CANCEL',
+    });
+
+    if (result) {
+      return reply.send({
+        success: true,
+        message: 'Telegram session cleared successfully',
+      });
+    } else {
+      return reply.code(500).send({
+        success: false,
+        error: 'Failed to clear Telegram session',
+      });
+    }
+  } catch (error) {
+    return reply.code(500).send({
+      success: false,
+      error: error.message || 'Failed to clear authentication',
     });
   }
 }
